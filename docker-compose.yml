@@ -1,0 +1,15 @@
+services:
+  database:
+    container_name: mongodb
+    image: mongo:6.0-focal
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_NAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS}
+    volumes:
+      - pga_storage:/data/db
+    ports:
+      - ${MONGO_PORT}:27017
+
+volumes:
+  pga_storage:

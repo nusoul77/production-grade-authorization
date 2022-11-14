@@ -45,8 +45,14 @@ class UsersController {
   update() {
     return async (req, res) => {
       try {
+        const userId = String(req.params?.id);
+
+        if (!userId) {
+          throw new Error(`userId wasn't provided`);
+        }
+
         res.status(STATUS_CODES.CREATED);
-        res.send('await this._userService.updateOne({_id: userId})');
+        res.send(await this._userService.updateOne(userId, req.body));
       } catch (exception) {
         res.status(exception.statusCode || STATUS_CODES.INTERNAL_SERVER_ERROR);
         res.send(exception.statusCode ? exception : { message: 'Internal server error' });
@@ -57,8 +63,14 @@ class UsersController {
   delete() {
     return async (req, res) => {
       try {
+        const userId = String(req.params?.id);
+
+        if (!userId) {
+          throw new Error(`userId wasn't provided`);
+        }
+
         res.status(STATUS_CODES.ACCEPTED);
-        res.send('await this._userService.deleteOne({_id: userId})');
+        res.send(await this._userService.deleteOne(userId));
       } catch (exception) {
         res.status(exception.statusCode || STATUS_CODES.INTERNAL_SERVER_ERROR);
         res.send(exception.statusCode ? exception : { message: 'Internal server error' });

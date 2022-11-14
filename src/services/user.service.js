@@ -25,6 +25,7 @@ class UserService {
       firstName,
       lastName,
       role: USER_ROLES.USER,
+      isDeleted: false,
     };
 
     return await this._userRepository.create(user);
@@ -33,7 +34,7 @@ class UserService {
   async findAll() {
     this.logger.log(`Searching for all users`);
 
-    const allUsers = await this._userRepository.findMany({});
+    const allUsers = await this._userRepository.findMany({ isDeleted: false });
 
     const userReturnModels = allUsers
       .filter((user) => user.role !== USER_ROLES.ADMIN)
@@ -61,6 +62,52 @@ class UserService {
     }
 
     const { _id, email, password, firstName, lastName, role } = existingOne;
+
+    const returnModel = {
+      id: _id,
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+    };
+
+    return returnModel;
+  }
+
+  async updateOne(userId, update) {
+    this.logger.log(`Updating user`, { userId, update });
+
+    const updated = await this._userRepository.update(userId, update);
+
+    if (!updated?.modifiedCount) {
+      return null;
+    }
+
+    const { _id, email, password, firstName, lastName, role } = updated;
+
+    const returnModel = {
+      id: _id,
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+    };
+
+    return returnModel;
+  }
+
+  async deleteOne(userId) {
+    this.logger.log(`Removing user`, { userId });
+
+    const deleted = await this._userRepository.update(userId, { isDeleted: true });
+
+    if (!deleted?.modifiedCount) {
+      return null;
+    }
+
+    const { _id, email, password, firstName, lastName, role } = deleted;
 
     const returnModel = {
       id: _id,

@@ -3,8 +3,13 @@ import moment from 'moment';
 
 import { connectionWrapper } from './connection.js';
 import { COLLECTIONS } from '../utils/constants.js';
+import Logger from '../utils/logger.js';
 
 class UserRepository {
+  constructor() {
+    this.logger = new Logger(UserRepository.name);
+  }
+
   async create(user) {
     const timeStamp = moment().toDate();
 
@@ -39,24 +44,18 @@ class UserRepository {
     return await connectionWrapper(findMany, filter, COLLECTIONS.USERS);
   }
 
-  // TODO:
-  async update(userId, user) {
-    const timeStamp = moment().toDate();
+  async update(userId, update) {
+    try {
+      const timeStamp = moment().toDate();
 
-    const updateOne = async (connection, input) => await connection.updateOne({ ...input, updatedAt: timeStamp });
+      const updateOne = async (connection, input) =>
+        await connection.updateOne({ _id: new ObjectId(userId) }, { $set: { ...input, updatedAt: timeStamp } });
 
-    return await connectionWrapper(updateOne, user, COLLECTIONS.USERS);
-  }
-
-  // TODO:
-  async delete(userId) {
-    const timeStamp = moment().toDate();
-
-    const input = { isDeleted: true };
-
-    const updateOne = async (connection, input) => await connection.updateOne({ ...input, updatedAt: timeStamp });
-
-    return await connectionWrapper(updateOne, input, COLLECTIONS.USERS);
+      return await connectionWrapper(updateOne, update, COLLECTIONS.USERS);
+    } catch (err) {
+      this.logger.error(err.message, err.stack);
+      throw err;
+    }
   }
 }
 

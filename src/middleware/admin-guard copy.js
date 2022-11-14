@@ -1,7 +1,8 @@
-import { STATUS_CODES } from '../utils/constants.js';
+import ForbiddenException from '../exceptions/forbidden.exception.js';
+import { STATUS_CODES, USER_ROLES } from '../utils/constants.js';
 import { verifyToken } from '../utils/token.js';
 
-function AuthorizationGuard(req, res, next) {
+function AdminGuard(req, res, next) {
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -11,7 +12,9 @@ function AuthorizationGuard(req, res, next) {
   }
 
   try {
-    verifyToken(authorization);
+    const { role } = verifyToken(authorization);
+
+    if (role !== USER_ROLES.ADMIN) throw new ForbiddenException(`Forbidden`);
   } catch (exception) {
     res.status(exception.statusCode || 500);
     res.send(exception.statusCode ? exception : { message: 'Internal server error' });
@@ -21,4 +24,4 @@ function AuthorizationGuard(req, res, next) {
   next();
 }
 
-export default AuthorizationGuard;
+export default AdminGuard;

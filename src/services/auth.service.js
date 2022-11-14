@@ -22,10 +22,10 @@ class AuthService {
         throw new Error(`User wasn't created`);
       }
 
-      const token = generateToken({ email: body.email });
+      const token = generateToken({ email: createdUser.email, role: createdUser.role });
 
       return {
-        auth_token: `Bearer_${token}`,
+        auth_token: token,
       };
     } catch (err) {
       this.logger.error(err.message, err.stack);
@@ -46,10 +46,10 @@ class AuthService {
 
       await compare(body.password, existingOne.password);
 
-      const token = generateToken({ email: body.email });
+      const token = generateToken({ email: existingOne.email, role: existingOne.role });
 
       return {
-        auth_token: `Bearer_${token}`,
+        auth_token: token,
       };
     } catch (err) {
       this.logger.error(err.message, err.stack);

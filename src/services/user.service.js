@@ -1,5 +1,6 @@
-import ConflictException from '../exceptions/conflict.exception.js';
 import Logger from '../utils/logger.js';
+import ConflictException from '../exceptions/conflict.exception.js';
+import { USER_ROLES } from '../utils/constants.js';
 
 class UserService {
   constructor(userRepository) {
@@ -8,7 +9,9 @@ class UserService {
   }
 
   async createUser(input) {
-    this.logger.log(`Creating user`, { input });
+    const { email, password, firstName, lastName } = input;
+
+    this.logger.log(`Creating user`, { email, firstName, lastName });
 
     const existingOne = await this.findOneWithFilter({ email: input.email });
 
@@ -16,13 +19,59 @@ class UserService {
       throw new ConflictException(`User with email:"${input.email}" already exists`);
     }
 
-    return await this._userRepository.create(input);
+    const user = {
+      email,
+      password,
+      firstName,
+      lastName,
+      role: USER_ROLES.USER,
+    };
+
+    return await this._userRepository.create(user);
+  }
+
+  async findAll() {
+    this.logger.log(`Searching for all users`);
+
+    const allUsers = await this._userRepository.findMany({});
+
+    const userReturnModels = allUsers
+      .filter((user) => user.role !== USER_ROLES.ADMIN)
+      .map((user) => {
+        const { _id, email, firstName, lastName } = user;
+
+        return {
+          id: _id,
+          email,
+          firstName,
+          lastName,
+        };
+      });
+
+    return userReturnModels;
   }
 
   async findOneWithFilter(filter) {
     this.logger.log(`Searching for specific user`, { filter });
 
-    return await this._userRepository.findOne(filter);
+    const existingOne = await this._userRepository.findOne(filter);
+
+    if (!existingOne) {
+      return null;
+    }
+
+    const { _id, email, password, firstName, lastName, role } = existingOne;
+
+    const returnModel = {
+      id: _id,
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+    };
+
+    return returnModel;
   }
 }
 

@@ -5,20 +5,23 @@ import Logger from './logger.js';
 import ForbiddenException from '../exceptions/forbidden.exception.js';
 
 const logger = new Logger('JWT');
+const { secret, prefix } = config.auth;
 
 export const generateToken = (payload) => {
-  return jwt.sign(payload, config.auth.secret, { expiresIn: '7d' });
+  const token = jwt.sign(payload, secret, { expiresIn: '7d' });
+
+  return prefix + token;
 };
 
 export const verifyToken = (bearer) => {
   try {
-    const token = String(bearer).split('Bearer_')[1];
+    const token = String(bearer).split(prefix)[1];
 
     if (!token) {
       throw new ForbiddenException(`Invalid token`);
     }
 
-    return jwt.verify(token, config.auth.secret);
+    return jwt.verify(token, secret);
   } catch (err) {
     logger.error(err.message, err.stack);
 
